@@ -1,22 +1,28 @@
-import type { Actions } from "./$types";
+import { fail, redirect } from "@sveltejs/kit";
 
-interface RegisterReturnObject {
+interface ReturnObject {
     success: boolean;
+    email: string;
+    password: string;
+    passwordConfirmation?: never;
+    name?: never;
     errors: string[]
 }
 
 export const actions = {
-    default: async ({ request }) => {
+    default: async ({ request, locals: { supabase } }) => {
         const formData = await request.formData();
 
         const email = formData.get('email') as string;
         const password = formData.get('password') as string;
 
-        const returnObject: RegisterReturnObject = {
+        const returnObject: ReturnObject = {
             success: true,
+            email,
+            password,
             errors: []
         }
-        
+
         if (!email.length)
             returnObject.errors.push("Email is required");
 
@@ -28,6 +34,18 @@ export const actions = {
             return returnObject;
         }
 
-        return returnObject;
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password,
+        })
+
+        if (error || !data.user) {
+            console.log("There has been an error", error)
+
+            returnObject.success = false;
+            return fail(400, returnObject as any)
+        }
+
+        redirect(303, "private/dashboard")
     }
 }

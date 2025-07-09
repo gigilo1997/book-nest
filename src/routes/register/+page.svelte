@@ -1,7 +1,7 @@
 <script lang="ts">
-    import AuthForm from "$lib/components/AuthForm.svelte";
+  import AuthForm from "$lib/components/AuthForm.svelte";
 
-    let { form } = $props();
+  let { form } = $props();
 </script>
 
 <AuthForm isRegistration={true} {form} />
